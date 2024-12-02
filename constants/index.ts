@@ -1,4 +1,10 @@
-export const GenderOptions = ["Male", "Female"];
+import {
+  CancelAppointmentSchema,
+  CreateAppointmentSchema,
+  ScheduleAppointmentSchema,
+} from "@/lib/validation";
+
+export const GenderOptions = ["male", "female"];
 
 export const PatientFormDefaultValues = {
   firstName: "",
@@ -6,7 +12,7 @@ export const PatientFormDefaultValues = {
   email: "",
   phone: "",
   birthDate: new Date(Date.now()),
-  gender: "Male" as Gender,
+  gender: "male" as Gender,
   address: "",
   occupation: "",
   emergencyContactName: "",
@@ -84,3 +90,39 @@ export const StatusIcon = {
   pending: "/assets/icons/pending.svg",
   cancelled: "/assets/icons/cancelled.svg",
 };
+type ButtonLabel =
+  | "Cancel Appointment"
+  | "Schedule Appointment"
+  | "Submit Appointment";
+
+export const appointmentFormType = {
+  create: {
+    status: "pending",
+    buttonLabel: "Submit Appointment",
+    schema: CreateAppointmentSchema,
+  },
+  schedule: {
+    status: "scheduled",
+    buttonLabel: "Schedule Appointment",
+    schema: ScheduleAppointmentSchema,
+  },
+  cancel: {
+    status: "cancelled",
+    buttonLabel: "Cancel Appointment",
+    schema: CancelAppointmentSchema,
+  },
+};
+// export const appointmentFormType: Record<AppointmentType, { status: Status; buttonLabel: ButtonLabel }> = {
+//   create: {
+//     status: "pending",
+//     buttonLabel: "Submit Appointment",
+//   },
+//   schedule: {
+//     status: "scheduled",
+//     buttonLabel: "Schedule Appointment",
+//   },
+//   cancel: {
+//     status: "cancelled",
+//     buttonLabel: "Cancel Appointment",
+//   },
+// };
