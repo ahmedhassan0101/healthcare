@@ -1,54 +1,40 @@
 import { z } from "zod";
 
+const minMaxString = (min: number, max: number, fieldName: string) =>
+  z
+    .string()
+    .min(min, `${fieldName} must be at least ${min} characters`)
+    .max(max, `${fieldName} must be at most ${max} characters`);
+
+const phoneValidation = z
+  .string()
+  .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number");
+
+const consentValidation = (message: string) =>
+  z
+    .boolean()
+    .default(false)
+    .refine((value) => value === true, { message });
+
 export const UserFormValidation = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be at most 50 characters"),
+  name: minMaxString(2, 50, "Name"),
   email: z.string().email("Invalid email address"),
-  phone: z
-    .string()
-    .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number"),
+  phone: phoneValidation,
 });
 
 export const PatientFormValidation = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be at most 50 characters"),
+  name: minMaxString(2, 50, "Name"),
   email: z.string().email("Invalid email address"),
-  phone: z
-    .string()
-    .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number"),
+  phone: phoneValidation,
   birthDate: z.coerce.date(),
-  gender: z.enum(["Male", "Female", "Other"]),
-  address: z
-    .string()
-    .min(5, "Address must be at least 5 characters")
-    .max(500, "Address must be at most 500 characters"),
-  occupation: z
-    .string()
-    .min(2, "Occupation must be at least 2 characters")
-    .max(500, "Occupation must be at most 500 characters"),
-  emergencyContactName: z
-    .string()
-    .min(2, "Contact name must be at least 2 characters")
-    .max(50, "Contact name must be at most 50 characters"),
-  emergencyContactNumber: z
-    .string()
-    .refine(
-      (emergencyContactNumber) => /^\+\d{10,15}$/.test(emergencyContactNumber),
-      "Invalid phone number"
-    ),
-  primaryPhysician: z.string().min(2, "Select at least one doctor"),
-  insuranceProvider: z
-    .string()
-    .min(2, "Insurance name must be at least 2 characters")
-    .max(50, "Insurance name must be at most 50 characters"),
-  insurancePolicyNumber: z
-    .string()
-    .min(2, "Policy number must be at least 2 characters")
-    .max(50, "Policy number must be at most 50 characters"),
+  gender: z.enum(["male", "female"]),
+  address: minMaxString(5, 500, "Address"),
+  occupation: minMaxString(2, 500, "Occupation"),
+  emergencyContactName: minMaxString(2, 50, "Contact name"),
+  emergencyContactNumber: phoneValidation,
+  primaryPhysician: minMaxString(2, 50, "Primary physician"),
+  insuranceProvider: minMaxString(2, 50, "Insurance name"),
+  insurancePolicyNumber: minMaxString(2, 50, "Policy number"),
   allergies: z.string().optional(),
   currentMedication: z.string().optional(),
   familyMedicalHistory: z.string().optional(),
@@ -56,33 +42,23 @@ export const PatientFormValidation = z.object({
   identificationType: z.string().optional(),
   identificationNumber: z.string().optional(),
   identificationDocument: z.custom<File[]>().optional(),
-  treatmentConsent: z
-    .boolean()
-    .default(false)
-    .refine((value) => value === true, {
-      message: "You must consent to treatment in order to proceed",
-    }),
-  disclosureConsent: z
-    .boolean()
-    .default(false)
-    .refine((value) => value === true, {
-      message: "You must consent to disclosure in order to proceed",
-    }),
-  privacyConsent: z
-    .boolean()
-    .default(false)
-    .refine((value) => value === true, {
-      message: "You must consent to privacy in order to proceed",
-    }),
+  treatmentConsent: consentValidation(
+    "You must consent to treatment in order to proceed"
+  ),
+  disclosureConsent: consentValidation(
+    "You must consent to disclosure in order to proceed"
+  ),
+  privacyConsent: consentValidation(
+    "You must consent to privacy in order to proceed"
+  ),
 });
+
+
 
 export const CreateAppointmentSchema = z.object({
   primaryPhysician: z.string().min(2, "Select at least one doctor"),
   schedule: z.coerce.date(),
-  reason: z
-    .string()
-    .min(2, "Reason must be at least 2 characters")
-    .max(500, "Reason must be at most 500 characters"),
+  reason: minMaxString(2, 500, "Reason"),
   note: z.string().optional(),
   cancellationReason: z.string().optional(),
 });
@@ -100,10 +76,7 @@ export const CancelAppointmentSchema = z.object({
   schedule: z.coerce.date(),
   reason: z.string().optional(),
   note: z.string().optional(),
-  cancellationReason: z
-    .string()
-    .min(2, "Reason must be at least 2 characters")
-    .max(500, "Reason must be at most 500 characters"),
+  cancellationReason: minMaxString(2, 500, "Reason"),
 });
 
 export function getAppointmentSchema(type: string) {
