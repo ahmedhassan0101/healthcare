@@ -1,5 +1,6 @@
 import FormLayout from "@/components/FormLayout";
 import PatientForm from "@/components/forms/PatientForm";
+import { PasskeyModal } from "@/components/PasskeyModal";
 
 const FormLayoutProps = {
   imageSrc: "/assets/images/onboarding-img.png",
@@ -11,6 +12,7 @@ const FormLayoutProps = {
 export default function Home() {
   return (
     <FormLayout {...FormLayoutProps}>
+      <PasskeyModal />
       <PatientForm />
     </FormLayout>
   );
