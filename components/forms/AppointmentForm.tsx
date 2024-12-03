@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
 // import { getAppointmentSchema } from "@/lib/validation";
@@ -13,7 +14,10 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import { SelectItem } from "../ui/select";
 import Image from "next/image";
 import CustomHeader from "../CustomHeader";
-import { createAppointment } from "@/lib/actions/appointment.actions";
+import {
+  createAppointment,
+  updateAppointment,
+} from "@/lib/actions/appointment.actions";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -28,6 +32,8 @@ export default function AppointmentForm({
   userId,
   patientId,
   type = "create",
+  appointment,
+  setOpen,
 }: Props) {
   const router = useRouter();
 
@@ -35,7 +41,15 @@ export default function AppointmentForm({
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: {},
+    defaultValues: {
+      primaryPhysician: appointment ? appointment?.primaryPhysician : "",
+      schedule: appointment
+        ? new Date(appointment.schedule!)
+        : new Date(Date.now()),
+      reason: appointment ? appointment.reason : "",
+      note: appointment?.note || "",
+      cancellationReason: appointment?.cancellationReason || "",
+    },
   });
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
@@ -60,6 +74,25 @@ export default function AppointmentForm({
             `/patients/${userId}/new-appointment/success?appointmentId=${newAppointment.$id}`
           );
         }
+      } else if (appointment) {
+        const appointmentToUpdate = {
+          userId,
+          appointmentId: appointment?.$id,
+          appointment: {
+            primaryPhysician: values.primaryPhysician,
+            schedule: new Date(values.schedule),
+            status: status as Status,
+            cancellationReason: values.cancellationReason,
+          },
+          type,
+        };
+
+        const updatedAppointment = await updateAppointment(appointmentToUpdate);
+
+        if (updatedAppointment) {
+          setOpen && setOpen(false);
+          form.reset();
+        }
       }
     } catch (error) {
       console.error(error);
@@ -69,10 +102,12 @@ export default function AppointmentForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-6">
-        <CustomHeader
-          title="New Appointment"
-          description="Request a new appointment in 10 seconds."
-        />
+        {type === "create" && (
+          <CustomHeader
+            title="New Appointment"
+            description="Request a new appointment in 10 seconds."
+          />
+        )}
         {type !== "cancel" && (
           <>
             <CustomFormField
